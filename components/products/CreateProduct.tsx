@@ -1,37 +1,57 @@
 import React, { useState } from "react";
 import ProductModal from "./ProductModal";
 
-const CreateProduct: React.FC = () => {
-    const [loading, setLoading] = useState(false);
+interface Props {
+  onFetch: Function;
+}
 
-    const onCreate = async (nameInput: string, priceInput: string, quantityInput: string) => {
-        setLoading(true);
+const CreateProduct: React.FC<Props> = ({ onFetch }) => {
+  const [loading, setLoading] = useState(false);
 
-        try {
-            let response = await fetch(`http://localhost:8888/products/create`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+  const [open, setOpen] = useState(false);
 
-                body: JSON.stringify({
-                    name: nameInput,
-                    price: +priceInput,
-                    quantity: +quantityInput,
-                }),
-            });
+  const onCreate = async (
+    nameInput: string,
+    priceInput: string,
+    quantityInput: string
+  ) => {
+    setLoading(true);
 
-            let data = await response.json();
+    try {
+      let response = await fetch(`http://localhost:8888/products/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
 
-            console.log(data);
-        } catch (error) {
-            console.log(error);
-        } finally {
-            setLoading(false);
-        }
-    };
+        body: JSON.stringify({
+          name: nameInput,
+          price: +priceInput,
+          quantity: +quantityInput,
+        }),
+      });
 
-    return <ProductModal buttonTItle="Create Product" loading={loading} onSave={onCreate} />;
+      let data = await response.json();
+
+      console.log(data);
+      await onFetch();
+      setOpen(false);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <ProductModal
+      buttonTItle="Create Product"
+      loading={loading}
+      onSave={onCreate}
+      isOpen={open}
+      setOpen={setOpen}
+    />
+  );
 };
 
 export default CreateProduct;

@@ -5,58 +5,85 @@ import { Button } from "../ui/button";
 import EditProduct from "./EditProduct";
 
 interface Props {
-    id: string;
-    name: string;
-    price: string;
-    quantity: string;
-    onselect: (id: string) => void;
+  id: string;
+  name: string;
+  price: string;
+  quantity: string;
+  onselect: (id: string) => void;
+  onFetch: Function;
 }
 
-const ProductCard: React.FC<Props> = ({ name, price, quantity, onselect, id }) => {
-    const onUpateProduct = async (id: string, name: string, price: string, quantity: string) => {
-        try {
-            let response = await fetch(`http://localhost:8888/products/${id}`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    name: name,
-                    price: +price,
-                    quantity: +quantity,
-                }),
-            });
-
-            let data = await response.json();
-            console.log(data);
-        } catch (error) {
-            console.log(error);
-        }
+const ProductCard: React.FC<Props> = ({
+  name,
+  price,
+  quantity,
+  onselect,
+  id,
+  onFetch,
+}) => {
+  const onCreateOrder = async () => {
+    const orderObj = {
+      createdOn: new Date().toISOString(),
+      items: [
+        {
+          productId: id,
+          boughtQuantity: 1,
+        },
+      ],
+      userAddress: {
+        City: "ABC",
+        Country: "India",
+        ZipCode: "300192",
+      },
+      totalAmount: price,
     };
 
-    return (
-        <Card className="p-4">
-            <div className="flex justify-between">
-                <div className="">
-                    <h1 className="text-lg font-semibold">{name}</h1>
-                    <p className="text-gray-500">Price: {price}</p>
-                    <p className="text-gray-500">Quantity: {quantity}</p>
-                </div>
+    try {
+      const response = await fetch("http://localhost:8888/orders/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(orderObj),
+      });
 
-                <div>
-                    <Checkbox className="mr-2" onCheckedChange={() => onselect(id)} />
-                </div>
-            </div>
+      console.log(response);
+    } catch (error) {
+      console.log("Error in creating order...");
+    }
+  };
 
-            <div>
-                <div className="mt-4 flex gap-2">
-                    <Button variant="default">Create Order</Button>
+  return (
+    <Card className="p-4">
+      <div className="flex justify-between">
+        <div className="">
+          <h1 className="text-lg font-semibold">{name}</h1>
+          <p className="text-gray-500">Price: {price}</p>
+          <p className="text-gray-500">Quantity: {quantity}</p>
+        </div>
 
-                    <EditProduct id={id} name={name} price={price} quantity={quantity} />
-                </div>
-            </div>
-        </Card>
-    );
+        <div>
+          <Checkbox className="mr-2" onCheckedChange={() => onselect(id)} />
+        </div>
+      </div>
+
+      <div>
+        <div className="mt-4 flex gap-2">
+          <Button onClick={onCreateOrder} variant="default">
+            Create Order
+          </Button>
+
+          <EditProduct
+            onFetch={onFetch}
+            id={id}
+            name={name}
+            price={price}
+            quantity={quantity}
+          />
+        </div>
+      </div>
+    </Card>
+  );
 };
 
 export default ProductCard;

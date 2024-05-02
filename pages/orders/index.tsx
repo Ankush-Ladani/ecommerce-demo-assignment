@@ -1,6 +1,4 @@
 import Layout from "@/components/Layout";
-import ProductCard from "@/components/products/ProductCard";
-import { useCallback, useEffect, useState } from "react";
 import {
   Select,
   SelectContent,
@@ -10,49 +8,63 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import CreateProduct from "@/components/products/CreateProduct";
+import React, { useEffect } from "react";
+import { useState, useCallback } from "react";
+import OrderCard from "@/components/orders/OrderCard";
 
-export interface IProduct {
-  id: string;
-  name: string;
-  price: string;
-  quantity: string;
+type Props = {};
+
+interface IOrder {
+  orderId: string;
+  createdOn: string;
+  items: [
+    {
+      productId: string;
+      boughtQuantity: number;
+    }
+  ];
+  userAddress: {
+    City: string;
+    Country: string;
+    ZipCode: string;
+  };
+  totalAmount: number;
 }
 
-export default function Home() {
+const OrdersPage = (props: Props) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [products, setProducts] = useState<IProduct[]>([]);
-  const [priceRange, setPriceRange] = useState([0, 1000]);
+  const [orders, setOrders] = useState<IOrder[]>([]);
   const [limit, setLimit] = useState("10");
-  const [sort, setSort] = useState("asc");
-  const [selectedItems, SelectedItems] = useState<IProduct["id"][]>([]);
+  const [selectedItems, SelectedItems] = useState<IOrder["orderId"][]>([]);
 
-  const fetchProducts = useCallback(async () => {
+  const fetchOrders = useCallback(async () => {
     setIsLoading(true);
 
     try {
       let response = await fetch(
-        `http://localhost:8888/products/all?limit=${limit}`
+        `http://localhost:8888/orders/all?limit=${limit}`
       );
       let data = await response.json();
-
-      if (sort === "desc")
-        data.data.sort((a: any, b: any) => b.price - a.price);
-      else data.data.sort((a: any, b: any) => a.price - b.price);
-
-      setProducts(data.data);
+      //   console.log(data);
+      setOrders(data);
     } catch (error) {
-      setProducts([]);
+      setOrders([]);
     } finally {
       setIsLoading(false);
     }
-  }, [sort, limit]);
+  }, [limit]);
 
   useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
+    fetchOrders();
+  }, [fetchOrders]);
 
-  const onSelectProduct = (id: string) => {
+  console.log(orders);
+
+  const onLimitChange = (value: string) => {
+    setLimit(value);
+  };
+
+  const onSelectOrder = (id: string) => {
     if (selectedItems.includes(id)) {
       SelectedItems((prev) => {
         return prev.filter((item) => item !== id);
@@ -64,25 +76,13 @@ export default function Home() {
     }
   };
 
-  const onSortChange = (value: string) => {
-    setSort(value);
-  };
-
-  const onLimitChange = (value: string) => {
-    setLimit(value);
-  };
-
-  const onDeleteProduct = async (id: string) => {
+  const onDeleteOrder = async (id: string) => {
     setIsLoading(true);
 
     try {
-      let response = await fetch(`http://localhost:8888/products/${id}`, {
+      await fetch(`http://localhost:8888/orders/${id}`, {
         method: "DELETE",
       });
-
-      // if (response.ok) {
-      //   fetchProducts();
-      // }
     } catch (error) {
       console.error(error);
     } finally {
@@ -97,14 +97,11 @@ export default function Home() {
           <h1>Loading...</h1>
         </div>
       )}
-
       <div>
         <div className="flex flex-col gap-2 lg:flex-row lg:justify-between lg:items-center">
-          <h1>Products</h1>
+          <h1>Orders</h1>
 
           <div className="flex flex-col gap-2 lg:flex-row lg:items-center">
-            <CreateProduct onFetch={fetchProducts} />
-
             <Select value={limit} onValueChange={onLimitChange}>
               <SelectTrigger className="w-[100px]">
                 <SelectValue placeholder="Items to Show" />
@@ -138,24 +135,6 @@ export default function Home() {
                 </SelectGroup>
               </SelectContent>
             </Select>
-
-            <Select onValueChange={onSortChange} value={sort}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Sort By" />
-              </SelectTrigger>
-
-              <SelectContent>
-                <SelectGroup>
-                  <SelectItem className="cursor-pointer" value="asc">
-                    Price Low to High
-                  </SelectItem>
-
-                  <SelectItem className="cursor-pointer" value="desc">
-                    Price High to Low
-                  </SelectItem>
-                </SelectGroup>
-              </SelectContent>
-            </Select>
           </div>
         </div>
 
@@ -163,14 +142,11 @@ export default function Home() {
           <div className="mt-6">
             <Button
               onClick={async () => {
-                if (selectedItems.length > 0) {
-                  await selectedItems.forEach(async (item) => {
-                    // console.log(item);
-                    await onDeleteProduct(item);
-                  });
-                  await fetchProducts();
-                  SelectedItems([]);
-                }
+                await selectedItems.forEach(
+                  async (item) => await onDeleteOrder(item)
+                );
+                SelectedItems([]);
+                await fetchOrders();
               }}
               className="mr-2 bg-red-500">
               Delete {selectedItems.length} Selected Items
@@ -179,16 +155,16 @@ export default function Home() {
         )}
 
         <div className="grid gap-4 mt-6">
-          {products.map(({ id, name, price, quantity }) => {
+          {orders.map(({ orderId, totalAmount, createdOn, items }) => {
             return (
-              <ProductCard
-                key={id}
-                id={id}
-                name={name}
-                price={price}
-                quantity={quantity}
-                onselect={onSelectProduct}
-                onFetch={fetchProducts}
+              <OrderCard
+                key={orderId}
+                createdOn={createdOn}
+                orderId={orderId}
+                boughtQuantity={items[0].boughtQuantity}
+                totalAmount={totalAmount}
+                onselect={onSelectOrder}
+                onFetch={fetchOrders}
               />
             );
           })}
@@ -196,4 +172,6 @@ export default function Home() {
       </div>
     </Layout>
   );
-}
+};
+
+export default OrdersPage;
