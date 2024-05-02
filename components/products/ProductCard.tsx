@@ -39,13 +39,16 @@ const ProductCard: React.FC<Props> = ({
     };
 
     try {
-      const response = await fetch("http://localhost:8888/orders/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(orderObj),
-      });
+      const response = await fetch(
+        "https://fastapi-ecommerce-api-bknc.onrender.com/orders/create",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(orderObj),
+        }
+      );
 
       console.log(response);
     } catch (error) {

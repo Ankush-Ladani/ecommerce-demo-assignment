@@ -27,18 +27,21 @@ const EditProduct: React.FC<Props> = ({
     setLoading(true);
     // setOpen(false);
     try {
-      let response = await fetch(`http://localhost:8888/products/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
+      let response = await fetch(
+        `https://fastapi-ecommerce-api-bknc.onrender.com/products/${id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
 
-        body: JSON.stringify({
-          name: nameInput,
-          price: +priceInput,
-          quantity: +quantityInput,
-        }),
-      });
+          body: JSON.stringify({
+            name: nameInput,
+            price: +priceInput,
+            quantity: +quantityInput,
+          }),
+        }
+      );
 
       let data = await response.json();
 

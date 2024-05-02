@@ -32,7 +32,7 @@ export default function Home() {
 
     try {
       let response = await fetch(
-        `http://localhost:8888/products/all?limit=${limit}`
+        `https://fastapi-ecommerce-api-bknc.onrender.com/products/all?limit=${limit}`
       );
       let data = await response.json();
 
@@ -76,9 +76,12 @@ export default function Home() {
     setIsLoading(true);
 
     try {
-      let response = await fetch(`http://localhost:8888/products/${id}`, {
-        method: "DELETE",
-      });
+      let response = await fetch(
+        `https://fastapi-ecommerce-api-bknc.onrender.com/products/${id}`,
+        {
+          method: "DELETE",
+        }
+      );
 
       // if (response.ok) {
       //   fetchProducts();

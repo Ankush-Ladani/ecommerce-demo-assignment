@@ -42,7 +42,7 @@ const OrdersPage = (props: Props) => {
 
     try {
       let response = await fetch(
-        `http://localhost:8888/orders/all?limit=${limit}`
+        `https://fastapi-ecommerce-api-bknc.onrender.com/orders/all?limit=${limit}`
       );
       let data = await response.json();
       //   console.log(data);
@@ -80,9 +80,12 @@ const OrdersPage = (props: Props) => {
     setIsLoading(true);
 
     try {
-      await fetch(`http://localhost:8888/orders/${id}`, {
-        method: "DELETE",
-      });
+      await fetch(
+        `https://fastapi-ecommerce-api-bknc.onrender.com/orders/${id}`,
+        {
+          method: "DELETE",
+        }
+      );
     } catch (error) {
       console.error(error);
     } finally {
